@@ -1,0 +1,39 @@
+# Dependências
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Cache
+.cache/
+.kotlin/
+*.tsbuildinfo
+.metro-health-check*
+
+# Logs
+*.log
+
+# Credenciais e certificados
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Pastas nativas geradas
+/ios/
+/android/
