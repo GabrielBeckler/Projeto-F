@@ -1,19 +1,79 @@
+import { useState } from 'react'
 import {View,Text,StyleSheet,Image,TouchableOpacity} from 'react-native'
-import { router } from 'expo-router'
 import { arrayProdType } from '../types/prodType'
 
-type Props = {produto: arrayProdType}
+type Props = {produto: arrayProdType};
+
 export default function ProdutoCard ({produto} : Props) {
+    const [expandido, setExpandido] = useState(false);
+    const [menuAberto, setMenuAberto] = useState(false);
+
     return (
-        <TouchableOpacity style={styles.card}>
-            <View style={styles.info}>
-                <Text style={styles.titulo}>{produto.titulo}</Text>
-                <Text style={styles.preco}>{produto.preco}</Text>
-                <Text style={styles.descricao}>{produto.descricao}</Text>
+        <View style={styles.card}>
+            <TouchableOpacity
+                style={styles.conteudo}
+                onPress={() => setExpandido((anterior) => !anterior)}
+                accessibilityRole="button"
+                accessibilityState={{ expanded: expandido }}
+            >
+                <View style={styles.info}>
+                    <Text style={styles.titulo}>{produto.titulo}</Text>
+                    <Text style={styles.preco}>{produto.preco}</Text>
+                    <Text>
+                        {expandido
+                            ? "Ocultar descrição ▲"
+                            : "Ver descrição ▼"}
+                    </Text>
+                    {expandido && (
+                        <Text style={styles.descricao}>
+                            {produto.descricao}
+                        </Text>
+                    )}
+                </View>
+                <Image 
+                    style={styles.imagem} 
+                    source={produto.imagem}
+                />
+            </TouchableOpacity>
+            
+            <View style={styles.areaOpcoes}>
+                <TouchableOpacity
+                    style={styles.botaoOpcoes}
+                    onPress={() => setMenuAberto((anterior) => !anterior)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Opções de ${produto.titulo}`}
+                    accessibilityState={{ expanded: menuAberto }}
+                >
+                <Text style={styles.pontinhos}>⋮</Text>
+            </TouchableOpacity>
+
+            {menuAberto && (
+                <View style={styles.menu}>
+                    <TouchableOpacity
+                        style={styles.itemMenu}
+                        onPress={() => {
+                            setMenuAberto(false);
+                            console.log('Editar produto:', produto.titulo);
+                        }}
+                    >
+                        <Text>Editar</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.itemMenu}
+                        onPress={() => {
+                            setMenuAberto(false);
+                            console.log('Deletar produto:', produto.titulo);
+                        }}
+                    >
+                        <Text style={styles.textoExcluir}>Deletar</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
             </View>
-            <Image style={styles.imagem} source={produto.imagem}/>
-        </TouchableOpacity>
-    )}
+        </View>
+    );
+}
 
 const styles = StyleSheet.create({
     card:{
@@ -25,7 +85,7 @@ const styles = StyleSheet.create({
         shadowColor:"#111",
         shadowOpacity:0.08,
         flexDirection: "row",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
         paddingVertical:12,
         paddingHorizontal:16
@@ -39,6 +99,44 @@ const styles = StyleSheet.create({
         height:110,
         borderRadius:130,
         marginLeft:12
+    },
+    conteudo: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+    },
+
+    areaOpcoes: {
+        alignItems: "center",
+        marginLeft: 8,
+    },
+
+    botaoOpcoes: {
+        minWidth: 44,
+        minHeight: 44,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    pontinhos: {
+        fontSize: 28,
+        color: "#111",
+    },
+
+    menu: {
+        backgroundColor: "#fff",
+        borderRadius: 8,
+        paddingVertical: 4,
+    },
+
+    itemMenu: {
+        minHeight: 44,
+        justifyContent: "center",
+        paddingHorizontal: 12,
+    },
+
+    textoExcluir: {
+        color: "#c62828",
     }
 
 })
