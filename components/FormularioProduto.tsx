@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
     Text,
     TextInput,
-    Button,
     Image,
     ScrollView,
     StyleSheet,

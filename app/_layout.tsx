@@ -12,7 +12,7 @@ export default function RootLayout() {
                 <Stack.Screen
                     name="index"
                     options={{
-                        title: "Agrizzi Sorvete´s",
+                        title: "Gelato App",
                         headerShown: false,
                     }}
                 />
@@ -20,7 +20,7 @@ export default function RootLayout() {
                 <Stack.Screen
                     name="lista"
                     options={{
-                        title: "Agrizzi Sorvete´s",
+                        title: "Gelato App",
                         headerTitle: "",
                         headerBackTitle: "",
                         headerBackButtonDisplayMode: "minimal",

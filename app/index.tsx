@@ -1,45 +1,61 @@
+import { router } from "expo-router";
 import {
-    View,
-    Text,
     Image,
-    TouchableOpacity,
     ScrollView,
     StyleSheet,
+    Text,
+    TouchableOpacity,
     useWindowDimensions,
+    View,
 } from "react-native";
-import { router } from "expo-router";
 
 export default function TelaPrincipal() {
-    const { width } = useWindowDimensions();
-    const telaLarga = width >= 700;
+    const { width, height } = useWindowDimensions();
+
+    // Em janelas muito baixas, permite rolagem para não esconder conteúdo.
+    const telaLarga = width >= 700 && height >= 500;
 
     return (
         <ScrollView
             style={styles.tela}
-            contentContainerStyle={styles.pagina}
+            contentContainerStyle={[
+                styles.pagina,
+                telaLarga && styles.paginaDesktop,
+            ]}
+            scrollEnabled={!telaLarga}
         >
             <View
                 style={[
                     styles.painel,
-                    { flexDirection: telaLarga ? "row" : "column" },
+                    telaLarga
+                        ? [
+                              styles.painelDesktop,
+                              { height: Math.min(620, height - 40) },
+                          ]
+                        : styles.painelCelular,
                 ]}
             >
-                <Image
-                    source={require("../assets/images/home.png")}
+                <View
                     style={[
-                        styles.imagem,
+                        styles.areaLogo,
                         telaLarga
-                            ? styles.imagemLarga
-                            : styles.imagemEstreita,
+                            ? styles.areaLogoDesktop
+                            : styles.areaLogoCelular,
                     ]}
-                    accessibilityLabel="Agrizzi apresentando um sorvete"
-                />
+                >
+                    <Image
+                        source={require("../assets/images/home.png")}
+                        style={styles.logo}
+                        resizeMode="contain"
+                        accessibilityLabel="Logo Gelato com tubarão surfista"
+                    />
+                </View>
 
                 <View style={styles.conteudo}>
-                    <Text style={styles.marca}>AGRIZZI SORVETE´S</Text>
+                    <Text style={styles.marca}>GELATO APP</Text>
 
                     <Text style={styles.titulo}>
-                        Bem-vindo à sorveteria do Agrizzi!
+                        Bem-vindo à sorveteria Gelato!
                     </Text>
 
                     <Text style={styles.descricao}>
@@ -62,37 +78,56 @@ export default function TelaPrincipal() {
 }
 
 const styles = StyleSheet.create({
-  
     tela: {
         flex: 1,
-        backgroundColor: "#fff8ee",
+        backgroundColor: "#FFF8F0",
     },
     pagina: {
         flexGrow: 1,
         justifyContent: "center",
         padding: 20,
     },
+    paginaDesktop: {
+        flex: 1,
+        minHeight: 0,
+    },
     painel: {
         width: "100%",
-        maxWidth: 2300,
+        maxWidth: 1100,
         alignSelf: "center",
-        backgroundColor: "#fdf3f3",
-        borderRadius: 20,
+        backgroundColor: "#FFF5F7",
+        borderRadius: 24,
         overflow: "hidden",
     },
-    imagem: {
-        resizeMode: "cover",
+    painelDesktop: {
+        flexDirection: "row",
+        minHeight: 0,
     },
-    imagemLarga: {
+    painelCelular: {
+        flexDirection: "column",
+    },
+    areaLogo: {
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+    },
+    areaLogoDesktop: {
         width: "45%",
-        minHeight: 520,
+        height: "100%",
     },
-    imagemEstreita: {
+    areaLogoCelular: {
         width: "100%",
-        height: 340,
+        height: 280,
+        paddingBottom: 8,
+    },
+    logo: {
+        width: "100%",
+        height: "100%",
     },
     conteudo: {
-        flex: 1,
+        flexGrow: 1,
+        flexShrink: 1,
+        minWidth: 0,
         justifyContent: "center",
         padding: 28,
         gap: 20,
@@ -100,31 +135,34 @@ const styles = StyleSheet.create({
     marca: {
         fontSize: 14,
         fontWeight: "700",
-        color: "#b32b53",
+        color: "#B32B53",
         letterSpacing: 2,
     },
     titulo: {
-        fontSize: 32,
+        fontSize: 30,
         fontWeight: "800",
         color: "#492411",
+        flexShrink: 1,
     },
     descricao: {
         fontSize: 17,
         lineHeight: 26,
         color: "#666",
+        flexShrink: 1,
     },
     botao: {
-        backgroundColor: "#b32b53",
+        backgroundColor: "#B32B53",
         minHeight: 52,
         borderRadius: 12,
         alignItems: "center",
         justifyContent: "center",
-        paddingHorizontal: 24,
+        paddingHorizontal: 32,
+        paddingVertical: 14,
         alignSelf: "flex-start",
     },
     textoBotao: {
         fontSize: 18,
         fontWeight: "700",
-        color: "#fff",
+        color: "#FFFFFF",
     },
 });

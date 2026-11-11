@@ -1,21 +1,19 @@
 {
   "expo": {
-    "name": "Agrizzi Sorvete´s",
-    "slug": "sorveteria",
+    "name": "Gelato App",
+    "slug": "gelato-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "sorveteria",
+    "icon": "./assets/images/favicon.png",
+    "scheme": "gelato-app",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#FFF8F0",
+        "foregroundImage": "./assets/images/favicon.png"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -37,9 +35,9 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/favicon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#FFF8F0"
         }
       ],
       "expo-sqlite"

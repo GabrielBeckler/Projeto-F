@@ -27,11 +27,16 @@ import {
 } from "../database/produtosRepository";
 
 import type { Produto } from "../types/produto";
+import {
+    SafeAreaProvider,
+    SafeAreaView,
+} from "react-native-safe-area-context";
 
 export default function Lista() {
   const db = useSQLiteContext();
   const { width } = useWindowDimensions();
   const telaLarga = width >= 900;
+  const [formularioAberto, setFormularioAberto] = useState(false);
 
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -93,18 +98,36 @@ export default function Lista() {
     };
 }, [db]);
 
+  function novoProduto() {
+      if (operacaoEmAndamento.current) return;
+
+      setProdutoEmEdicao(null);
+      setVersaoFormulario((anterior) => anterior + 1);
+      setFormularioAberto(true);
+  }
+
+  function cancelarFormulario() {
+    if (operacaoEmAndamento.current) return;
+
+      limparFormulario();
+  }
+
   function limparFormulario() {
     setProdutoEmEdicao(null);
     setVersaoFormulario((anterior) => anterior + 1);
+    setFormularioAberto(false);
   }
 
   function editar(produto: Produto) {
     if (operacaoEmAndamento.current) return;
 
-    setProdutoEmEdicao(produto);
-    setVersaoFormulario((anterior) => anterior + 1);
-  }
+      setProdutoEmEdicao(produto);
+      setVersaoFormulario((anterior) => anterior + 1);
 
+      if (!telaLarga || formularioAberto) {
+          setFormularioAberto(true);
+      }
+  }
   async function salvar(dados: DadosProdutos) {
     if (operacaoEmAndamento.current) {
       throw new Error("Aguarde a operação atual.");
@@ -199,14 +222,15 @@ async function alternarArquivamento(produto: Produto) {
     >
       <View
         style={[
-          styles.paineis,
-          { flexDirection: telaLarga ? "row" : "column" },
+            styles.paineis,
+            { flexDirection: telaLarga ? "row" : "column" },
+            !telaLarga && styles.paineisEstreitos,
         ]}
       >
         <View style={styles.lista}>
         <View style={styles.cabecalhoLista}>
             <View style={styles.textosCabecalho}>
-                <Text style={styles.sobreTitulo}>AGRIZZI SORVETE´S</Text>
+                <Text style={styles.sobreTitulo}>GELATO´S APP</Text>
                 <Text style={styles.titulo}>Seus sorvetes</Text>
                 <Text style={styles.subtitulo}>
                     Organize os sabores e deixe seu catálogo em dia.
@@ -218,6 +242,20 @@ async function alternarArquivamento(produto: Produto) {
                 <Text style={styles.rotuloContador}>no catálogo</Text>
             </View>
         </View>
+        {!telaLarga && (
+          <TouchableOpacity
+              style={[
+                  styles.botaoNovo,
+                  ocupado && styles.botaoDesabilitado,
+              ]}
+              onPress={novoProduto}
+              disabled={ocupado}
+              accessibilityRole="button"
+              accessibilityLabel="Cadastrar novo sorvete"
+          >
+              <Text style={styles.textoBotaoNovo}>+ Novo sorvete</Text>
+          </TouchableOpacity>
+        )}
           {erro && (
             <View>
               <Text style={styles.erro}>{erro}</Text>
@@ -231,6 +269,9 @@ async function alternarArquivamento(produto: Produto) {
 
           <FlatList
             data={produtos}
+            style={styles.rolagemLista}
+            contentContainerStyle={styles.conteudoLista}
+            showsVerticalScrollIndicator={false}
             extraData={ocupado}
             keyExtractor={(item) => item.id.toString()}
             keyboardShouldPersistTaps="handled"
@@ -255,19 +296,60 @@ async function alternarArquivamento(produto: Produto) {
           />
         </View>
 
-        <View
-          style={[styles.formulario, !telaLarga && styles.formularioEstreito]}
-        >
-          <FormularioProduto
-            key={versaoFormulario}
-            produto={produtoEmEdicao}
-            ocupado={ocupado}
-            onSalvar={salvar}
-            onCancelar={limparFormulario}
-          />
-        </View>
+        {telaLarga && !formularioAberto && (
+            <View style={styles.formulario}>
+                <FormularioProduto
+                    key={versaoFormulario}
+                    produto={produtoEmEdicao}
+                    ocupado={ocupado}
+                    onSalvar={salvar}
+                    onCancelar={cancelarFormulario}
+                />
+            </View>
+        )}
       </View>
+        <Modal
+          visible={formularioAberto}
+          animationType="slide"
+          presentationStyle="fullScreen"
+          onRequestClose={cancelarFormulario}
+      >
+          <SafeAreaProvider>
+              <SafeAreaView style={styles.telaFormulario}>
+                  <KeyboardAvoidingView
+                      style={styles.corpoFormulario}
+                      behavior={Platform.OS === "ios" ? "padding" : undefined}
+                  >
+                      <View style={styles.barraFormulario}>
+                          <Text style={styles.marcaFormulario}>GELATO</Text>
 
+                          <TouchableOpacity
+                              style={[
+                                  styles.botaoFechar,
+                                  ocupado && styles.botaoDesabilitado,
+                              ]}
+                              onPress={cancelarFormulario}
+                              disabled={ocupado}
+                              accessibilityRole="button"
+                              accessibilityLabel="Cancelar e fechar formulário"
+                          >
+                              <Text style={styles.textoFechar}>Fechar</Text>
+                          </TouchableOpacity>
+                      </View>
+
+                      {formularioAberto && (
+                          <FormularioProduto
+                              key={versaoFormulario}
+                              produto={produtoEmEdicao}
+                              ocupado={ocupado}
+                              onSalvar={salvar}
+                              onCancelar={cancelarFormulario}
+                          />
+                      )}
+                  </KeyboardAvoidingView>
+              </SafeAreaView>
+          </SafeAreaProvider>
+      </Modal>
       <Modal
         visible={produtoParaExcluir !== null}
         transparent
@@ -554,5 +636,67 @@ const styles = StyleSheet.create({
 
   botaoDesabilitado: {
       opacity: 0.45,
-  },
+  },paineisEstreitos: {
+    padding: 8,
+    gap: 0,
+},
+
+botaoNovo: {
+    minHeight: 48,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 4,
+    borderRadius: 12,
+    backgroundColor: "#B32B53",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+},
+
+textoBotaoNovo: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    textAlign: "center",
+},
+
+telaFormulario: {
+    flex: 1,
+    backgroundColor: "#FFFCF8",
+},
+
+corpoFormulario: {
+    flex: 1,
+},
+
+barraFormulario: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EDE2D8",
+},
+
+marcaFormulario: {
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 2,
+    color: "#B32B53",
+},
+
+botaoFechar: {
+    minWidth: 64,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+},
+
+textoFechar: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#80543C",
+},
 });
