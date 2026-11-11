@@ -1,142 +1,265 @@
-import { useState } from 'react'
-import {View,Text,StyleSheet,Image,TouchableOpacity} from 'react-native'
-import { arrayProdType } from '../types/prodType'
+import { useState } from "react";
+import {
+    View,
+    Text,
+    Image,
+    TouchableOpacity,
+    StyleSheet,
+} from "react-native";
 
-type Props = {produto: arrayProdType};
+import type { Produto } from "../types/produto";
+import { obterImagemProduto } from "../utils/obterImagemProduto";
 
-export default function ProdutoCard ({produto} : Props) {
+type Props = {
+    produto: Produto;
+    onEditar?: (produto: Produto) => void;
+    onExcluir?: (produto: Produto) => void;
+    onAlternarArquivamento: (produto: Produto) => Promise<void>;
+    ocupado: boolean;
+};
+
+export default function ProdutoCard({
+    produto,
+    onEditar,
+    onExcluir,
+    onAlternarArquivamento,
+    ocupado,
+}: Props) {
     const [expandido, setExpandido] = useState(false);
     const [menuAberto, setMenuAberto] = useState(false);
 
+    const arquivado = produto.arquivado === 1;
+
     return (
-        <View style={styles.card}>
+        <View
+            style={[
+                styles.card,
+                arquivado && styles.cardArquivado,
+            ]}
+        >
             <TouchableOpacity
-                style={styles.conteudo}
-                onPress={() => setExpandido((anterior) => !anterior)}
+                style={styles.cabecalho}
+                onPress={() => {
+                    setMenuAberto(false);
+                    setExpandido((anterior) => !anterior);
+                }}
                 accessibilityRole="button"
                 accessibilityState={{ expanded: expandido }}
             >
                 <View style={styles.info}>
                     <Text style={styles.titulo}>{produto.titulo}</Text>
-                    <Text style={styles.preco}>{produto.preco}</Text>
-                    <Text>
+
+                    {arquivado && (
+                        <Text style={styles.avisoArquivado}>Arquivado</Text>
+                    )}
+
+                    <Text style={styles.preco}>
+                        {(produto.preco_centavos / 100).toLocaleString(
+                            "pt-BR",
+                            {
+                                style: "currency",
+                                currency: "BRL",
+                            }
+                        )}
+                    </Text>
+
+                    <Text style={styles.linkDescricao}>
                         {expandido
                             ? "Ocultar descrição ▲"
                             : "Ver descrição ▼"}
                     </Text>
-                    {expandido && (
-                        <Text style={styles.descricao}>
-                            {produto.descricao}
-                        </Text>
-                    )}
                 </View>
-                <Image 
-                    style={styles.imagem} 
-                    source={produto.imagem}
+
+                <Image
+                    source={obterImagemProduto(produto.imagem_chave)}
+                    style={styles.imagem}
                 />
             </TouchableOpacity>
-            
+
+            {expandido && (
+                <View style={styles.areaDescricao}>
+                    <Text style={styles.descricao}>
+                        {produto.descricao || "Sem descrição."}
+                    </Text>
+                </View>
+            )}
+
             <View style={styles.areaOpcoes}>
                 <TouchableOpacity
                     style={styles.botaoOpcoes}
                     onPress={() => setMenuAberto((anterior) => !anterior)}
+                    disabled={ocupado}
                     accessibilityRole="button"
                     accessibilityLabel={`Opções de ${produto.titulo}`}
                     accessibilityState={{ expanded: menuAberto }}
                 >
-                <Text style={styles.pontinhos}>⋮</Text>
-            </TouchableOpacity>
+                    <Text style={styles.pontinhos}>⋮</Text>
+                </TouchableOpacity>
 
-            {menuAberto && (
-                <View style={styles.menu}>
-                    <TouchableOpacity
-                        style={styles.itemMenu}
-                        onPress={() => {
-                            setMenuAberto(false);
-                            console.log('Editar produto:', produto.titulo);
-                        }}
-                    >
-                        <Text>Editar</Text>
-                    </TouchableOpacity>
+                {menuAberto && (
+                    <View style={styles.menu}>
+                        {arquivado ? (
+                            <TouchableOpacity
+                                style={styles.itemMenu}
+                                disabled={ocupado}
+                                accessibilityRole="button"
+                                onPress={() => {
+                                    setMenuAberto(false);
+                                    void onAlternarArquivamento(produto);
+                                }}
+                            >
+                                <Text>Desarquivar</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <>
+                                <TouchableOpacity
+                                    style={styles.itemMenu}
+                                    disabled={ocupado}
+                                    accessibilityRole="button"
+                                    onPress={() => {
+                                        setMenuAberto(false);
+                                        onEditar?.(produto);
+                                    }}
+                                >
+                                    <Text>Editar</Text>
+                                </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.itemMenu}
-                        onPress={() => {
-                            setMenuAberto(false);
-                            console.log('Deletar produto:', produto.titulo);
-                        }}
-                    >
-                        <Text style={styles.textoExcluir}>Deletar</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
+                                <TouchableOpacity
+                                    style={styles.itemMenu}
+                                    disabled={ocupado}
+                                    accessibilityRole="button"
+                                    onPress={() => {
+                                        setMenuAberto(false);
+                                        onExcluir?.(produto);
+                                    }}
+                                >
+                                    <Text style={styles.textoExcluir}>
+                                        Deletar
+                                    </Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={styles.itemMenu}
+                                    disabled={ocupado}
+                                    accessibilityRole="button"
+                                    onPress={() => {
+                                        setMenuAberto(false);
+                                        void onAlternarArquivamento(produto);
+                                    }}
+                                >
+                                    <Text>Arquivar</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
+                    </View>
+                )}
             </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    card:{
-        backgroundColor:"#d9d8d8",
-        marginHorizontal:12,
-        marginVertical:12,
-        borderRadius:12,
-        elevation:3,
-        shadowColor:"#111",
-        shadowOpacity:0.08,
+    card: {
+        position: "relative",
+        backgroundColor: "#FFFCF8",
+        marginHorizontal: 12,
+        marginVertical: 8,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: "#EDE2D8",
+        padding: 16,
+        minHeight: 200,
+    },
+
+    cardArquivado: {
+        backgroundColor: "#D2CBC5",
+        borderColor: "#BDB3AA",
+    },
+    cabecalho: {
         flexDirection: "row",
         alignItems: "flex-start",
-        justifyContent: "center",
-        paddingVertical:12,
-        paddingHorizontal:16
+        minHeight: 176,
+        paddingRight: 44,
+        gap: 12,
     },
-    info:{flex:1,gap:16},
-    titulo:{fontSize:20,fontWeight:700,color:"#111"},
-    preco:{fontSize:20,fontWeight:600,color:"#f50505"},
-    descricao:{fontSize:15,fontWeight:500,color:"#111"},
-    imagem:{
-        width:110,
-        height:110,
-        borderRadius:130,
-        marginLeft:12
-    },
-    conteudo: {
+    info: {
         flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
+        minWidth: 0,
+        gap: 12,
     },
-
+    titulo: {
+        fontSize: 19,
+        fontWeight: "700",
+        color: "#492411",
+    },
+    preco: {
+        fontSize: 20,
+        fontWeight: "800",
+        color: "#B32B53",
+    },
+    avisoArquivado: {
+        fontSize: 13,
+        fontWeight: "700",
+        color: "#333",
+    },
+    linkDescricao: {
+        fontSize: 13,
+        fontWeight: "600",
+        color: "#80543C",
+    },
+    imagem: {
+        width: 88,
+        height: 88,
+        borderRadius: 12,
+        resizeMode: "cover",
+    },
+    areaDescricao: {
+        borderTopWidth: 1,
+        borderTopColor: "#E5D9CE",
+        paddingTop: 14,
+        marginTop: 8,
+    },
+    descricao: {
+        fontSize: 15,
+        lineHeight: 23,
+        color: "#675B53",
+    },
     areaOpcoes: {
-        alignItems: "center",
-        marginLeft: 8,
+        position: "absolute",
+        top: 12,
+        right: 12,
+        zIndex: 10,
     },
-
     botaoOpcoes: {
-        minWidth: 44,
-        minHeight: 44,
+        width: 44,
+        height: 44,
         alignItems: "center",
         justifyContent: "center",
     },
-
     pontinhos: {
         fontSize: 28,
-        color: "#111",
+        color: "#222",
     },
-
     menu: {
+        position: "absolute",
+        top: 44,
+        right: 0,
+        width: 160,
         backgroundColor: "#fff",
-        borderRadius: 8,
-        paddingVertical: 4,
+        borderRadius: 10,
+        elevation: 8,
+        shadowColor: "#000",
+        shadowOpacity: 0.18,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 3 },
+        zIndex: 20,
     },
-
     itemMenu: {
         minHeight: 44,
         justifyContent: "center",
-        paddingHorizontal: 12,
+        paddingHorizontal: 16,
     },
-
     textoExcluir: {
-        color: "#c62828",
-    }
-
-})
+        color: "#b00020",
+    },
+});
