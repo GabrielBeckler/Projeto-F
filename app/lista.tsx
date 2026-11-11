@@ -14,6 +14,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import AccessibleButton from "../components/AccessibleButton";
 import FormularioProduto from "../components/FormularioProduto";
+import NotificacaoToast from "../components/NotificacaoToast";
 import ProdutoCard from "../components/produtoCard";
 
 import {
@@ -39,6 +40,7 @@ export default function Lista() {
   const [atualizando, setAtualizando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [tipoStatus, setTipoStatus] = useState<"sucesso" | "exclusao" | "arquivamento">("sucesso");
   const [produtoEmEdicao, setProdutoEmEdicao] = useState<Produto | null>(null);
   const [formularioAlterado, setFormularioAlterado] = useState(false);
   const [confirmarDescarte, setConfirmarDescarte] = useState(false);
@@ -158,6 +160,7 @@ export default function Lista() {
 
       limparFormulario();
       const listaAtualizada = await carregarProdutos();
+      setTipoStatus("sucesso");
       setStatus(
         listaAtualizada
           ? editando ? "Sorvete atualizado com sucesso." : "Sorvete cadastrado com sucesso."
@@ -193,6 +196,7 @@ export default function Lista() {
 
       setProdutoParaExcluir(null);
       const listaAtualizada = await carregarProdutos();
+      setTipoStatus("exclusao");
       setStatus(
         listaAtualizada
           ? "Sorvete excluído com sucesso."
@@ -234,6 +238,7 @@ export default function Lista() {
 
       const listaAtualizada = await carregarProdutos();
       const acao = produto.arquivado === 1 ? "desarquivado" : "arquivado";
+      setTipoStatus("arquivamento");
       setStatus(
         listaAtualizada
           ? `Sorvete ${acao} com sucesso.`
@@ -241,7 +246,8 @@ export default function Lista() {
       );
     } catch (error) {
       console.error("Erro ao alterar arquivamento:", error);
-      setErro("Não foi possível alterar o arquivamento.");
+      setTipoStatus("arquivamento");
+      setStatus("Não foi possível alterar o arquivamento. Tente novamente.");
     } finally {
       operacaoEmAndamento.current = false;
       setOcupado(false);
@@ -288,12 +294,6 @@ export default function Lista() {
             >
               <Text style={styles.textoBotaoNovo}>+ Novo sorvete</Text>
             </AccessibleButton>
-          )}
-
-          {status && (
-            <Text style={styles.status} accessibilityLiveRegion="polite" role="status">
-              {status}
-            </Text>
           )}
 
           {erro && (
@@ -379,6 +379,14 @@ export default function Lista() {
           </View>
         )}
       </View>
+
+      {status && (
+        <NotificacaoToast
+          mensagem={status}
+          variante={tipoStatus}
+          aoFechar={() => setStatus(null)}
+        />
+      )}
 
       <Modal
         visible={formularioAberto}
@@ -635,16 +643,6 @@ const styles = StyleSheet.create({
     lineHeight: 23,
     textAlign: "center",
     color: "#43362F",
-  },
-  status: {
-    marginHorizontal: 16,
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 10,
-    backgroundColor: "#EAF5EA",
-    color: "#254D2B",
-    fontSize: 14,
-    lineHeight: 20,
   },
   textoAtualizando: {
     color: "#43362F",
