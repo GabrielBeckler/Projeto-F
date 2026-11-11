@@ -4,11 +4,8 @@ import { router } from "expo-router";
 export default function TelaPrincipal() {
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => router.push('/lista')}>
-        <Image
-          source={require('../assets/images/home.jpg')}
-          style={styles.Imagem}
-        />
+      <TouchableOpacity onPress={() => router.push("/lista")}>
+        <Image source={require("../assets/images/home.png")} style={styles.Imagem} />
       </TouchableOpacity>
     </View>
   );
