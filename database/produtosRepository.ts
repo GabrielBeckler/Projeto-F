@@ -119,3 +119,13 @@ export async function desarquivarProduto(
         throw new Error("Produto não encontrado para desarquivamento.");
     }
 }
+
+export async function buscarProdutoPorTitulo(
+    db: SQLiteDatabase,
+    titulo: string,
+): Promise<Produto | null> {
+    return await db.getFirstAsync<Produto>(
+        `SELECT * FROM produtos WHERE titulo = ?`,
+        [titulo],
+    );
+}

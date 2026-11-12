@@ -7,6 +7,7 @@ import {
   Platform,
   StyleSheet,
   Text,
+  TextInput,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -24,6 +25,7 @@ import {
   desarquivarProduto,
   excluirProduto,
   listarProdutos,
+  buscarProdutoPorTitulo,
   type DadosProdutos,
 } from "../database/produtosRepository";
 
@@ -52,6 +54,11 @@ export default function Lista() {
   const [ocupado, setOcupado] = useState(false);
 
   const operacaoEmAndamento = useRef(false);
+  const [termoPesquisa, setTermoPesquisa] = useState("");
+  const produtosFiltrados = produtos.filter((produto) =>
+    produto.titulo.toLowerCase().includes(termoPesquisa.toLowerCase())
+  );
+  const produtosExibidos = termoPesquisa ? produtosFiltrados : produtos;
 
   const carregarProdutos = useCallback(async (): Promise<boolean> => {
     setAtualizando(true);
@@ -100,6 +107,10 @@ export default function Lista() {
       ativo = false;
     };
   }, [db]);
+
+  function pesquisarProduto(titulo: string): Promise<Produto | null> {
+    return buscarProdutoPorTitulo(db, titulo);
+  }
 
   function novoProduto() {
     if (operacaoEmAndamento.current) return;
@@ -274,6 +285,12 @@ export default function Lista() {
               <Text style={styles.subtitulo}>
                 Organize os sabores e deixe seu catálogo em dia.
               </Text>
+              <TextInput 
+                style={styles.entradaPesquisa}
+                placeholder="Pesquisar sorvete..."
+                value={termoPesquisa}
+                onChangeText={setTermoPesquisa}
+              />
             </View>
 
             <View style={styles.contador}>
@@ -324,7 +341,7 @@ export default function Lista() {
           )}
 
           <FlatList
-            data={produtos}
+            data={produtosExibidos}
             style={styles.rolagemLista}
             contentContainerStyle={styles.conteudoLista}
             showsVerticalScrollIndicator={false}
@@ -831,5 +848,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     color: "#5A2F1F",
+  },
+  entradaPesquisa: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: "#EDE2D8",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    fontSize: 14,
+    color: "#43362F",
   },
 });
