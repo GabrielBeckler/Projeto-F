@@ -14,6 +14,7 @@ export type DadosProdutos = Pick<
   | "composicao"
   | "preco_centavos"
   | "imagem_chave"
+  | "categoria"
 >;
 
 export async function buscarProdutoId(
@@ -37,7 +38,8 @@ export async function atualizarProduto(
          descricao = ?,
          composicao = ?,
          preco_centavos = ?,
-         imagem_chave = ?
+         imagem_chave = ?,
+         categoria = ?
      WHERE id = ?`,
     [
       produto.titulo,
@@ -45,6 +47,7 @@ export async function atualizarProduto(
       produto.composicao,
       produto.preco_centavos,
       produto.imagem_chave,
+      produto.categoria,
       id,
     ],
   );
@@ -64,14 +67,16 @@ export async function criarProduto(
       descricao,
       composicao,
       preco_centavos,
-      imagem_chave
-    ) VALUES (?, ?, ?, ?, ?)`,
+      imagem_chave,
+      categoria
+    ) VALUES (?, ?, ?, ?, ?, ?)`,
     [
       dados.titulo,
       dados.descricao,
       dados.composicao,
       dados.preco_centavos,
       dados.imagem_chave,
+      dados.categoria,
     ],
   );
 

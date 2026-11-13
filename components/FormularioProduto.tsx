@@ -3,7 +3,7 @@ import { Text, TextInput, Image, ScrollView, StyleSheet, View } from "react-nati
 import * as ImagePicker from "expo-image-picker";
 
 import AccessibleButton from "./AccessibleButton";
-import type { Produto } from "../types/produto";
+import type { CategoriaProduto, Produto } from "../types/produto";
 import type { DadosProdutos } from "../database/produtosRepository";
 import { obterImagemProduto } from "../utils/obterImagemProduto";
 
@@ -29,6 +29,7 @@ export default function FormularioProduto({
         produto ? (produto.preco_centavos / 100).toFixed(2).replace(".", ",") : "",
     );
     const [imagemChave, setImagemChave] = useState(produto?.imagem_chave ?? "");
+    const [categoria, setCategoria] = useState<CategoriaProduto>(produto?.categoria ?? "sorvete");
     const [selecionandoImagem, setSelecionandoImagem] = useState(false);
     const [erro, setErro] = useState<string | null>(null);
     const [campoComErro, setCampoComErro] = useState<"nome" | "preco" | "imagem" | null>(null);
@@ -74,6 +75,7 @@ export default function FormularioProduto({
                 composicao: composicao.trim(),
                 preco_centavos: precoCentavos,
                 imagem_chave: imagemChave,
+                categoria,
             });
         } catch (error) {
             console.error("Erro ao salvar:", error);
@@ -146,6 +148,35 @@ export default function FormularioProduto({
                 returnKeyType="next"
             />
             {campoComErro === "nome" && <Text style={styles.erroCampo} accessibilityLiveRegion="polite">{erro}</Text>}
+
+            <Text style={styles.rotulo}>Categoria</Text>
+            <View style={styles.opcoesCategoria}>
+                {([
+                    ["sorvete", "Sorvete"],
+                    ["acai", "Açaí"],
+                    ["picole", "Picolé"],
+                ] as const).map(([valor, rotulo]) => {
+                    const selecionada = categoria === valor;
+                    return (
+                        <AccessibleButton
+                            key={valor}
+                            style={[styles.opcaoCategoria, selecionada && styles.opcaoCategoriaAtiva]}
+                            focusStyle={styles.focusRing}
+                            onPress={() => {
+                                setCategoria(valor);
+                                onAlteracao();
+                            }}
+                            accessibilityRole="radio"
+                            accessibilityLabel={rotulo}
+                            accessibilityState={{ selected: selecionada }}
+                        >
+                            <Text style={[styles.textoOpcaoCategoria, selecionada && styles.textoOpcaoCategoriaAtiva]}>
+                                {rotulo}
+                            </Text>
+                        </AccessibleButton>
+                    );
+                })}
+            </View>
 
             <Text style={styles.rotulo}>Descrição</Text>
             <TextInput
@@ -292,6 +323,34 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: "700",
         color: "#34251D",
+    },
+    opcoesCategoria: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+    },
+    opcaoCategoria: {
+        minHeight: 44,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#E5D9CE",
+        backgroundColor: "#FFFCF8",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 16,
+    },
+    opcaoCategoriaAtiva: {
+        borderColor: "#9A2F52",
+        backgroundColor: "#FFF0F4",
+    },
+    textoOpcaoCategoria: {
+        color: "#5A2F1F",
+        fontSize: 14,
+        fontWeight: "600",
+    },
+    textoOpcaoCategoriaAtiva: {
+        color: "#9A2F52",
+        fontWeight: "800",
     },
     obrigatorio: {
         color: "#5A2F1F",

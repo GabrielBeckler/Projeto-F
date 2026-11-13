@@ -1,3 +1,5 @@
+export type CategoriaProduto = "sorvete" | "acai" | "picole";
+
 export type Produto = {
     id: number;
     titulo: string;
@@ -5,5 +7,6 @@ export type Produto = {
     composicao: string;
     preco_centavos: number;
     imagem_chave: string;
+    categoria: CategoriaProduto;
     arquivado: 0 | 1;
 };

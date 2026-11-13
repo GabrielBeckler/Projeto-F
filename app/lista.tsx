@@ -25,11 +25,10 @@ import {
   desarquivarProduto,
   excluirProduto,
   listarProdutos,
-  buscarProdutoPorTitulo,
   type DadosProdutos,
 } from "../database/produtosRepository";
 
-import type { Produto } from "../types/produto";
+import type { CategoriaProduto, Produto } from "../types/produto";
 
 export default function Lista() {
   const db = useSQLiteContext();
@@ -55,10 +54,43 @@ export default function Lista() {
 
   const operacaoEmAndamento = useRef(false);
   const [termoPesquisa, setTermoPesquisa] = useState("");
-  const produtosFiltrados = produtos.filter((produto) =>
-    produto.titulo.toLowerCase().includes(termoPesquisa.toLowerCase())
-  );
-  const produtosExibidos = termoPesquisa ? produtosFiltrados : produtos;
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState<CategoriaProduto | "todos">("todos");
+  const [statusSelecionado, setStatusSelecionado] = useState<"todos" | "arquivados">("todos");
+  const [ordenacao, setOrdenacao] = useState<"nome" | "preco">("nome");
+  const produtosExibidos = produtos
+    .filter((produto) => produto.titulo.toLocaleLowerCase().includes(termoPesquisa.trim().toLocaleLowerCase()))
+    .filter((produto) => categoriaSelecionada === "todos" || produto.categoria === categoriaSelecionada)
+    .filter((produto) => statusSelecionado === "todos" || produto.arquivado === 1)
+    .sort((a, b) => {
+      if (a.arquivado !== b.arquivado) {
+        return a.arquivado - b.arquivado;
+      }
+      if (ordenacao === "preco") {
+        return a.preco_centavos - b.preco_centavos || a.titulo.localeCompare(b.titulo, "pt-BR");
+      }
+      return a.titulo.localeCompare(b.titulo, "pt-BR");
+    });
+
+  function opcaoFiltro(
+    rotulo: string,
+    selecionada: boolean,
+    aoSelecionar: () => void,
+    chave: string,
+  ) {
+    return (
+      <AccessibleButton
+        key={chave}
+        style={[styles.opcaoFiltro, selecionada && styles.opcaoFiltroAtiva]}
+        focusStyle={styles.focusRing}
+        onPress={aoSelecionar}
+        accessibilityRole="button"
+        accessibilityLabel={rotulo}
+        accessibilityState={{ selected: selecionada }}
+      >
+        <Text style={[styles.textoOpcaoFiltro, selecionada && styles.textoOpcaoFiltroAtiva]}>{rotulo}</Text>
+      </AccessibleButton>
+    );
+  }
 
   const carregarProdutos = useCallback(async (): Promise<boolean> => {
     setAtualizando(true);
@@ -107,10 +139,6 @@ export default function Lista() {
       ativo = false;
     };
   }, [db]);
-
-  function pesquisarProduto(titulo: string): Promise<Produto | null> {
-    return buscarProdutoPorTitulo(db, titulo);
-  }
 
   function novoProduto() {
     if (operacaoEmAndamento.current) return;
@@ -290,12 +318,38 @@ export default function Lista() {
                 placeholder="Pesquisar sorvete..."
                 value={termoPesquisa}
                 onChangeText={setTermoPesquisa}
+                accessibilityLabel="Pesquisar produtos"
               />
+              <View style={styles.grupoFiltros}>
+                <Text style={styles.rotuloFiltros}>Categoria</Text>
+                <View style={styles.opcoesFiltros}>
+                  {opcaoFiltro("Todos", categoriaSelecionada === "todos", () => setCategoriaSelecionada("todos"), "categoria-todos")}
+                  {opcaoFiltro("Sorvete", categoriaSelecionada === "sorvete", () => setCategoriaSelecionada("sorvete"), "categoria-sorvete")}
+                  {opcaoFiltro("Açaí", categoriaSelecionada === "acai", () => setCategoriaSelecionada("acai"), "categoria-acai")}
+                  {opcaoFiltro("Picolé", categoriaSelecionada === "picole", () => setCategoriaSelecionada("picole"), "categoria-picole")}
+                </View>
+              </View>
+              <View style={styles.linhaFiltros}>
+                <View style={styles.grupoFiltroCompacto}>
+                  <Text style={styles.rotuloFiltros}>Exibição</Text>
+                  <View style={styles.opcoesFiltros}>
+                    {opcaoFiltro("Todos", statusSelecionado === "todos", () => setStatusSelecionado("todos"), "status-todos")}
+                    {opcaoFiltro("Arquivados", statusSelecionado === "arquivados", () => setStatusSelecionado("arquivados"), "status-arquivados")}
+                  </View>
+                </View>
+                <View style={styles.grupoFiltroCompacto}>
+                  <Text style={styles.rotuloFiltros}>Ordenar por</Text>
+                  <View style={styles.opcoesFiltros}>
+                    {opcaoFiltro("Nome", ordenacao === "nome", () => setOrdenacao("nome"), "ordem-nome")}
+                    {opcaoFiltro("Preço", ordenacao === "preco", () => setOrdenacao("preco"), "ordem-preco")}
+                  </View>
+                </View>
+              </View>
             </View>
 
             <View style={styles.contador}>
-              <Text style={styles.numeroContador}>{produtos.length}</Text>
-              <Text style={styles.rotuloContador}>no catálogo</Text>
+              <Text style={styles.numeroContador}>{produtosExibidos.length}</Text>
+              <Text style={styles.rotuloContador}>encontrados</Text>
             </View>
           </View>
 
@@ -364,6 +418,8 @@ export default function Lista() {
                 </Text>
               ) : erro ? (
                 <Text style={styles.mensagem}>Não foi possível mostrar os sorvetes. Tente atualizar.</Text>
+              ) : produtos.length > 0 ? (
+                <Text style={styles.mensagem}>Nenhum produto encontrado com esses filtros.</Text>
               ) : (
                 <View style={styles.estadoVazio}>
                   <Text style={styles.mensagem}>Nenhum sorvete cadastrado ainda.</Text>
@@ -857,5 +913,52 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 14,
     color: "#43362F",
+  },
+  grupoFiltros: {
+    gap: 6,
+    marginTop: 6,
+  },
+  linhaFiltros: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginTop: 4,
+  },
+  grupoFiltroCompacto: {
+    gap: 6,
+  },
+  rotuloFiltros: {
+    color: "#6B5145",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  opcoesFiltros: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  opcaoFiltro: {
+    minHeight: 36,
+    minWidth: 44,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#EDE2D8",
+    backgroundColor: "#FFFCF8",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+  },
+  opcaoFiltroAtiva: {
+    borderColor: "#9A2F52",
+    backgroundColor: "#FFF0F4",
+  },
+  textoOpcaoFiltro: {
+    color: "#5A2F1F",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  textoOpcaoFiltroAtiva: {
+    color: "#9A2F52",
+    fontWeight: "800",
   },
 });

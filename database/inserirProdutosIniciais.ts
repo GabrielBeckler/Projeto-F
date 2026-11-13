@@ -11,6 +11,7 @@ const produtosIniciais: DadosProdutos[] = [
         composicao: "",
         preco_centavos: 1290,
         imagem_chave: "chocolate",
+        categoria: "sorvete",
     },
     {
         titulo: "Sorvete de Morango",
@@ -18,6 +19,7 @@ const produtosIniciais: DadosProdutos[] = [
         composicao: "",
         preco_centavos: 1190,
         imagem_chave: "morango",
+        categoria: "sorvete",
     },
     {
         titulo: "Sorvete de Baunilha",
@@ -25,6 +27,7 @@ const produtosIniciais: DadosProdutos[] = [
         composicao: "",
         preco_centavos: 1090,
         imagem_chave: "baunilha",
+        categoria: "sorvete",
     },
     {
         titulo: "Sorvete de Pistache",
@@ -32,6 +35,7 @@ const produtosIniciais: DadosProdutos[] = [
         composicao: "",
         preco_centavos: 1390,
         imagem_chave: "pistache",
+        categoria: "sorvete",
     },
     {
         titulo: "Sorvete de Caramelo",
@@ -39,6 +43,7 @@ const produtosIniciais: DadosProdutos[] = [
         composicao: "",
         preco_centavos: 1290,
         imagem_chave: "caramelo",
+        categoria: "sorvete",
     },
     {
         titulo: "Sorvete de Limão",
@@ -46,6 +51,7 @@ const produtosIniciais: DadosProdutos[] = [
         composicao: "",
         preco_centavos: 1190,
         imagem_chave: "limao",
+        categoria: "sorvete",
     },
     {
         titulo: "Sorvete de Café",
@@ -53,6 +59,7 @@ const produtosIniciais: DadosProdutos[] = [
         composicao: "",
         preco_centavos: 1290,
         imagem_chave: "cafe",
+        categoria: "sorvete",
     },
     {
         titulo: "Sorvete de Frutas Vermelhas",
@@ -60,6 +67,7 @@ const produtosIniciais: DadosProdutos[] = [
         composicao: "",
         preco_centavos: 1390,
         imagem_chave: "frutas_vermelhas",
+        categoria: "sorvete",
     },
     {
         titulo: "Sorvete de Coco",
@@ -67,6 +75,7 @@ const produtosIniciais: DadosProdutos[] = [
         composicao: "",
         preco_centavos: 1190,
         imagem_chave: "coco",
+        categoria: "sorvete",
     },
 ];
 

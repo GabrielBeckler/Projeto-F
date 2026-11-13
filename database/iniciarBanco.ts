@@ -16,6 +16,14 @@ export async function iniciarBanco(db: SQLiteDatabase) {
                 CHECK (arquivado IN (0, 1))
         );
     `);
+    const colunasProduto = await db.getAllAsync<{ name: string }>(
+        "PRAGMA table_info(produtos)",
+    );
+    if (!colunasProduto.some((coluna) => coluna.name === "categoria")) {
+        await db.execAsync(
+            "ALTER TABLE produtos ADD COLUMN categoria TEXT NOT NULL DEFAULT 'sorvete'",
+        );
+    }
     console.log("Banco inicializado: tabela produtos pronta.");
     await inserirProdutosIniciais(db);
 
